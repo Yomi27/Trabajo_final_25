@@ -10,9 +10,6 @@ class DireccionController {
         return isset($source[$key]) ? (int)$source[$key] : $default;
     }
 
-    /**
-     * Redirige a una ruta de la app.
-     */
     private function redirect(string $path): void {
         header("Location: " . BASE_URL . $path);
         exit;
