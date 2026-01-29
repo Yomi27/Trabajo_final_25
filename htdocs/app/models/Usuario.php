@@ -231,7 +231,6 @@ class Usuario
         return ['ok' => false, 'msg' => 'Email inválido', 'link' => null];
     }
 
-    // ✅ tu tabla NO tiene id, tiene dni
     $stmt = $db->prepare("SELECT dni FROM usuario WHERE email = ? LIMIT 1");
     $stmt->execute([$email]);
     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
@@ -244,7 +243,6 @@ class Usuario
     $token  = bin2hex(random_bytes(32));
     $expira = date("Y-m-d H:i:s", strtotime("+1 hour"));
 
-    // ✅ actualizar por dni
     $stmt = $db->prepare("UPDATE usuario SET reset_token = ?, reset_expira = ? WHERE dni = ?");
     $stmt->execute([$token, $expira, $usuario['dni']]);
 
@@ -258,7 +256,7 @@ class Usuario
     return ['ok' => true, 'msg' => 'Si el correo existe, recibirás instrucciones.', 'link' => $link];
 }
 
-
+//No se si va... 
 public static function guardarNuevaPassword(string $token, string $password): bool
 {
     $db = Database::connect();
@@ -269,14 +267,12 @@ public static function guardarNuevaPassword(string $token, string $password): bo
     $password = (string)$password;
     if (strlen($password) < 6) return false;
 
-    // 1) validar token y caducidad
     $stmt = $db->prepare("SELECT dni FROM usuario WHERE reset_token = ? AND reset_expira > NOW() LIMIT 1");
     $stmt->execute([$token]);
     $usuario = $stmt->fetch(PDO::FETCH_ASSOC);
 
     if (!$usuario) return false;
 
-    // 2) actualizar pass + limpiar token
     $hash = password_hash($password, PASSWORD_DEFAULT);
 
     $stmt = $db->prepare("UPDATE usuario
